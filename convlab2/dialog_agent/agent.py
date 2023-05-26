@@ -110,7 +110,6 @@ class PipelineAgent(Agent):
 
         return agent_state
 
-
     def response(self, observation):
         """Generate agent response using the agent modules."""
         # Note: If you modify the logic of this function, please ensure that it is consistent with deploy.server.ServerCtrl._turn()
@@ -122,7 +121,8 @@ class PipelineAgent(Agent):
             self.input_action = self.nlu.predict(observation, context=[x[1] for x in self.history[:-1]])
         else:
             self.input_action = observation
-        self.input_action = deepcopy(self.input_action) # get rid of reference problem
+        self.input_action = deepcopy(
+            self.input_action)  # get rid of reference problem
         # get state
         if self.dst is not None:
             if self.name is 'sys':
@@ -132,9 +132,10 @@ class PipelineAgent(Agent):
             state = self.dst.update(self.input_action)
         else:
             state = self.input_action
-        state = deepcopy(state) # get rid of reference problem
+        state = deepcopy(state)  # get rid of reference problem
         # get action
-        self.output_action = deepcopy(self.policy.predict(state)) # get rid of reference problem
+        self.output_action = deepcopy(
+            self.policy.predict(state))  # get rid of reference problem
         # get model response
         if self.nlg is not None:
             model_response = self.nlg.generate(self.output_action)
@@ -143,7 +144,7 @@ class PipelineAgent(Agent):
         # print(model_response)
         if self.dst is not None:
             self.dst.state['history'].append([self.name, model_response])
-            if self.name is 'sys':
+            if self.name == 'sys':
                 self.dst.state['system_action'] = self.output_action
             else:
                 self.dst.state['user_action'] = self.output_action
