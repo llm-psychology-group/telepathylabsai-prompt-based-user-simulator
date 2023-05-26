@@ -1,3 +1,7 @@
+.ycm_extra_conf.py
+*.swp
+scripts/run_experiment.sh
+
 # extras
 Pipfile*
 results*
@@ -15,6 +19,7 @@ __pycache__
 
 # data
 data/**/train.json
+data/**/train_modified.json
 data/**/val.json
 data/**/test.json
 data/**/human_val.json
@@ -85,3 +90,4 @@ test.py
 
 *.egg-info
 pre-trained-models/
+venv/*
