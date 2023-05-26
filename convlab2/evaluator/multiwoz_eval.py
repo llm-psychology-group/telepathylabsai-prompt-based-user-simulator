@@ -351,12 +351,14 @@ class MultiWozEvaluator(Evaluator):
                 d, i, s, v = da.split('-', 3)
                 if d != domain:
                     continue
-                if i in ['inform', 'recommend', 'offerbook', 'offerbooked'] and s in mapping[d]:
+                if (i in ['inform', 'recommend', 'offerbook', 'offerbooked']
+                        and s in mapping[d]):
                     goal[d]['info'][mapping[d][s]] = v
                 elif i == 'request':
                     goal[d]['reqt'].append(s)
 
-        book_rate = self._book_rate_goal(goal, self.booked, [domain])
+        book_rate = self._book_rate_goal(
+            goal=goal, booked_entity=self.booked, domains=[domain])
         book_rate = np.mean(book_rate) if book_rate else None
 
         inform = self._inform_F1_goal(goal, self.sys_da_array, [domain])
@@ -387,7 +389,8 @@ class MultiWozEvaluator(Evaluator):
                 constraints += info_constraints
             else:
                 info_constraints = []
-            query_result = self.database.query(domain, info_constraints, soft_contraints=reqt_constraints)
+            query_result = self.database.query(
+                domain, info_constraints, soft_contraints=reqt_constraints)
             if not query_result:
                 mismatch += 1
                 continue
@@ -406,7 +409,8 @@ class MultiWozEvaluator(Evaluator):
         return match, mismatch
 
     def final_goal_analyze(self):
-        """percentage of domains, in which the final goal satisfies the database constraints.
+        """percentage of domains, in which the final goal satisfies the
+        database constraints.
         If there is no dialog action, returns 1."""
         match, mismatch = self._final_goal_analyze()
         if match == mismatch == 0:
