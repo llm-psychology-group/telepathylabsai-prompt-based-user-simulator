@@ -25,12 +25,14 @@ class Analyzer:
         if evaluator is None:
             self.sess = None
         else:
-            self.sess = BiSession(sys_agent=sys_agent, user_agent=self.user_agent, kb_query=None, evaluator=evaluator)
+            self.sess = BiSession(
+                sys_agent=sys_agent, user_agent=self.user_agent,
+                kb_query=None, evaluator=evaluator)
         return self.sess
 
     def sample_dialog(self, sys_agent):
         sess = self.build_sess(sys_agent)
-        sys_response = '' if self.user_agent.nlu else []
+        sys_response = '' if hasattr(self.user_agent, 'nlu') else []
         sess.init_session()
         print('init goal:')
         pprint(sess.evaluator.goal)
@@ -107,26 +109,29 @@ class Analyzer:
             # # pprint(sess.evaluator.goal)
             # print(sess.user_agent.policy.policy.goal.domain_goals, file=f)
             # print('-' * 50,file=f)
-
-            for i in range(40):
-                sys_response, user_response, session_over, reward = sess.next_turn(
+            for i in range(20):
+                (sys_response, user_response,
+                 session_over, reward) = sess.next_turn(
                     sys_response)
-                print('user in', sess.user_agent.get_in_da(),file=flog)
-                print('user out', sess.user_agent.get_out_da(),file=flog)
+                print('user in', sess.user_agent.get_in_da(), file=flog)
+                print('user out', sess.user_agent.get_out_da(), file=flog)
                 #
                 # print('sys in', sess.sys_agent.get_in_da(),file=flog)
                 # print('sys out', sess.sys_agent.get_out_da(),file=flog)
-                print('user:', user_response,file=flog)
-                print('sys:', sys_response,file=flog)
+                print('user:', user_response, file=flog)
+                print('sys:', sys_response, file=flog)
 
                 step += 2
 
-                if hasattr(sess.sys_agent, "get_in_da") and isinstance(sess.sys_agent.get_in_da(), list) \
-                        and sess.user_agent.get_out_da() != [] \
-                        and sess.user_agent.get_out_da() != sess.sys_agent.get_in_da():
+                if (hasattr(sess.sys_agent, "get_in_da") and
+                    isinstance(sess.sys_agent.get_in_da(), list) and
+                    sess.user_agent.get_out_da() != [] and
+                        sess.user_agent.get_out_da() != sess.sys_agent.get_in_da()):  # noqa
                     for da1 in sess.user_agent.get_out_da():
                         for da2 in sess.sys_agent.get_in_da():
-                            if da1 != da2 and da1 is not None and da2 is not None and (da1, da2) not in failed_da_sys:
+                            if (da1 != da2 and da1 is not None and
+                                da2 is not None and
+                                    (da1, da2) not in failed_da_sys):
                                 failed_da_sys.append((da1, da2))
 
                 if isinstance(last_sys_da, list) \
@@ -244,7 +249,9 @@ class Analyzer:
             np.random.seed(seed)
             torch.manual_seed(seed)
             # print(model_name[i], total_dialog)
-            complete, suc, pre, rec, f1, match, turn = self.comprehensive_analyze(agent_list[i], model_name[i], total_dialog)
+            (complete, suc, pre, rec, f1,
+             match, turn) = self.comprehensive_analyze(
+                agent_list[i], model_name[i], total_dialog)
             y0.append(complete)
             y1.append(suc)
             y2.append(pre)
@@ -261,11 +268,11 @@ class Analyzer:
 
         plt.figure(figsize=(12, 7), dpi=300)
 
-        font1 = {'weight': 'normal','size' : 20}
+        font1 = {'weight': 'normal', 'size': 20}
 
-        font2 = {'weight': 'bold','size' : 22}
+        font2 = {'weight': 'bold', 'size': 22}
 
-        font3 = {'weight': 'bold','size' : 35}
+        font3 = {'weight': 'bold', 'size': 35}
         plt.tick_params(axis='y', labelsize=20)
         plt.tick_params(axis='x', labelsize=22)
         plt.ylabel('score', font2)
