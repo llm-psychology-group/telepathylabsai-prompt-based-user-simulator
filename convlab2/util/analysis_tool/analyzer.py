@@ -1,6 +1,10 @@
 import os
-from convlab2.dialog_agent import BiSession, PipelineAgent
+import json
+from uuid import uuid4
+import traceback
+from convlab2.dialog_agent import BiSession
 from convlab2.evaluator.multiwoz_eval import MultiWozEvaluator
+from convlab2.evaluator.utterance_diversity import get_diversity_metrics
 from pprint import pprint
 import random
 import numpy as np
@@ -12,9 +16,10 @@ import logging
 
 
 class Analyzer:
-    def __init__(self, user_agent, dataset='multiwoz'):
+    def __init__(self, user_agent, save_dir, dataset='multiwoz'):
         self.user_agent = user_agent
         self.dataset = dataset
+        self.save_dir = save_dir
 
     def build_sess(self, sys_agent):
         if self.dataset == 'multiwoz':
@@ -38,7 +43,8 @@ class Analyzer:
         pprint(sess.evaluator.goal)
         print('-'*50)
         for i in range(40):
-            sys_response, user_response, session_over, reward = sess.next_turn(sys_response)
+            sys_response, user_response, session_over, reward = sess.next_turn(
+                sys_response)
             print('user:', user_response)
             # print('user in da:', sess.user_agent.get_in_da())
             # print('user out da:', sess.user_agent.get_out_da())
@@ -48,7 +54,8 @@ class Analyzer:
             print()
             if session_over is True:
                 break
-        print('task complete:', sess.user_agent.policy.policy.goal.task_complete())
+        print('task complete:',
+              sess.user_agent.policy.policy.goal.task_complete())
         print('task success:', sess.evaluator.task_success())
         print('book rate:', sess.evaluator.book_rate())
         print('inform precision/recall/f1:', sess.evaluator.inform_F1())
@@ -61,7 +68,7 @@ class Analyzer:
     def comprehensive_analyze(self, sys_agent, model_name, total_dialog=100):
         sess = self.build_sess(sys_agent)
 
-        goal_seeds = [random.randint(1,100000) for _ in range(total_dialog)]
+        goal_seeds = [random.randint(1, 100000) for _ in range(total_dialog)]
         precision = []
         recall = []
         f1 = []
@@ -81,21 +88,35 @@ class Analyzer:
             datefmt="%m/%d/%Y %H:%M:%S",
             level=logging.INFO,
         )
-        if not os.path.exists('results'):
-            os.mkdir('results')
-        output_dir = os.path.join('results', model_name)
-        if not os.path.exists(output_dir):
-            os.mkdir(output_dir)
-        f = open(os.path.join(output_dir, 'res.txt'), 'w')
-        flog = open(os.path.join(output_dir, 'log.txt'), 'w')
+        # if not os.path.exists('results'):
+        #     os.mkdir('results')
+        # output_dir = os.path.join('results', model_name)
+        # if not os.path.exists(output_dir):
+        #     os.mkdir(output_dir)
+        # if not save_name:
+        #     f = open(os.path.join(output_dir, 'res.txt'), 'w')
+        # else:
+        #     f = open(os.path.join(output_dir, save_name), 'w')
+        # flog = open(os.path.join(output_dir, 'log.txt'), 'w')
 
+        if not os.path.exists(self.save_dir):
+            os.makedirs(self.save_dir)
+        # mode append
+        f = open(os.path.join(self.save_dir, 'res.txt'), 'a')
+        flog = open(os.path.join(self.save_dir, 'log.txt'), 'a')
+        fgen_filepath_json = os.path.join(self.save_dir, 'generated.json')
+        fgen_txt = open(os.path.join(self.save_dir, 'generated.txt'), 'a')
+
+        user_responses = []
+        generated = {}  # store prompted, processed and generated per conv_id
         for j in tqdm(range(total_dialog), desc="dialogue"):
-            sys_response = '' if self.user_agent.nlu else []
+            sys_response = '' if hasattr(self.user_agent, 'nlu') else []
             random.seed(goal_seeds[0])
             np.random.seed(goal_seeds[0])
             torch.manual_seed(goal_seeds[0])
             goal_seeds.pop(0)
-            sess.init_session()
+            conversation_id = uuid4().hex
+            sess.init_session(conversation_id=conversation_id)
 
             usr_da_list = []
             failed_da_sys = []
@@ -103,6 +124,9 @@ class Analyzer:
             last_sys_da = None
 
             step = 0
+
+            print('**** conversation_id={} ****'.format(
+                conversation_id), file=flog)
 
             # print('init goal:',file=f)
             # # print(sess.evaluator.goal, file=f)
@@ -120,6 +144,8 @@ class Analyzer:
                 # print('sys out', sess.sys_agent.get_out_da(),file=flog)
                 print('user:', user_response, file=flog)
                 print('sys:', sys_response, file=flog)
+
+                user_responses.append(user_response)
 
                 step += 2
 
@@ -141,14 +167,18 @@ class Analyzer:
                             if da1 != da2 and da1 is not None and da2 is not None and (da1, da2) not in failed_da_usr:
                                 failed_da_usr.append((da1, da2))
 
-                last_sys_da = sess.sys_agent.get_out_da() if hasattr(sess.sys_agent, "get_out_da") else None
+                last_sys_da = sess.sys_agent.get_out_da() if hasattr(
+                    sess.sys_agent, "get_out_da") else None
                 usr_da_list.append(sess.user_agent.get_out_da())
 
                 if session_over:
                     break
 
             task_success = sess.evaluator.task_success()
-            task_complete = sess.user_agent.policy.policy.goal.task_complete()
+            if hasattr(sess.user_agent.policy, 'policy'):
+                task_complete = sess.user_agent.policy.policy.goal.task_complete()  # noqa
+            else:
+                task_complete = sess.user_agent.policy.goal.task_complete()
             book_rate = sess.evaluator.book_rate()
             stats = sess.evaluator.inform_F1()
             percentage = sess.evaluator.final_goal_analyze()
@@ -174,10 +204,12 @@ class Analyzer:
                 logger.info('task complete: %.3f', complete_num/(j+1))
                 logger.info('task success: %.3f', suc_num/(j+1))
                 logger.info('book rate: %.3f', np.mean(match))
-                logger.info('inform precision/recall/f1: %.3f %.3f %.3f', np.mean(precision), np.mean(recall), np.mean(f1))
-                logging.info("percentage of domains that satisfy the database constraints: %.3f" % \
+                logger.info(
+                    'inform precision/recall/f1: %.3f %.3f %.3f',
+                    np.mean(precision), np.mean(recall), np.mean(f1))
+                logger.info("percentage of domains that satisfy the database constraints: %.3f" % \
                              (1 if num_domains == 0 else (num_domains_satisfying_constraints / num_domains)))
-                logging.info("percentage of dialogs that satisfy the database constraints: %.3f" % (num_dialogs_satisfying_constraints / (j + 1)))
+                logger.info("percentage of dialogs that satisfy the database constraints: %.3f" % (num_dialogs_satisfying_constraints / (j + 1)))
             domain_set = []
             for da in sess.evaluator.usr_da_array:
                 if da.split('-')[0] != 'general' and da.split('-')[0] not in domain_set:
@@ -202,38 +234,102 @@ class Analyzer:
             for domain in domain_set:
                 domain_success = sess.evaluator.domain_success(domain)
                 if domain_success is not None:
-                    reporter.record(domain, domain_success, sess.evaluator.domain_reqt_inform_analyze(domain), failed_da_sys, failed_da_usr, cycle_start, domain_turn)
+                    reporter.record(
+                        domain, domain_success,
+                        sess.evaluator.domain_reqt_inform_analyze(domain),
+                        failed_da_sys, failed_da_usr, cycle_start, domain_turn)
+
+            try:
+                # add last_generate
+                generated[conversation_id] = sess.user_agent.nlg.last_generate
+
+                # write json file
+                with open(fgen_filepath_json, 'w') as fp:
+                    json.dump(generated, fp, indent=2)
+
+                # append
+                print(
+                    '\n*** conversation_id={} ***\n'
+                    '\n=== PROMPTED ===\n'
+                    '{}'
+                    '\n=== GENERATED ===\n'
+                    '{}'
+                    '\n=== PROCESSED ===\n'
+                    '{}'
+                    '\n=== RESULTS ==='
+                    '\ntask_success: {}'
+                    '\ntask_complete: {}'
+                    '\nbook_rate: {}'
+                    '\nstats: {}'
+                    '\npercentage: {}'
+                    '\n\n'
+                    ''.format(
+                        conversation_id,
+                        generated[conversation_id]['prompted_text'],
+                        generated[conversation_id]['generated_text'],
+                        generated[conversation_id]['processed_text'],
+                        task_success,
+                        task_complete,
+                        book_rate,
+                        stats,
+                        percentage
+                    ),
+                    file=fgen_txt)
+            except Exception as exc:
+                logger.warning(
+                    'Cannot write last_generate: {} Traceback: {}'.format(
+                        exc, traceback.format_exc()))
+
+            print('**** end of dialog ****', file=flog)
+        diversity = get_diversity_metrics(user_responses)
 
         tmp = 0 if suc_num == 0 else turn_suc_num / suc_num
-        print("=" * 100)
-        print("complete number of dialogs/tot:", complete_num / total_dialog)
-        print("success number of dialogs/tot:", suc_num / total_dialog)
-        print("average precision:", np.mean(precision))
-        print("average recall:", np.mean(recall))
-        print("average f1:", np.mean(f1))
-        print('average book rate:', np.mean(match))
-        print("average turn (succ):", tmp)
-        print("average turn (all):", turn_num / total_dialog)
-        print("percentage of domains that satisfy the database constraints: %.3f" % \
-              (1 if num_domains == 0 else (num_domains_satisfying_constraints / num_domains)))
-        print("percentage of dialogs that satisfy the database constraints: %.3f" % (num_dialogs_satisfying_constraints / total_dialog))
-        print("=" * 100)
-        print("complete number of dialogs/tot:", complete_num / total_dialog, file=f)
-        print("success number of dialogs/tot:", suc_num / total_dialog, file=f)
-        print("average precision:", np.mean(precision), file=f)
-        print("average recall:", np.mean(recall), file=f)
-        print("average f1:", np.mean(f1), file=f)
-        print('average book rate:', np.mean(match), file=f)
-        print("average turn (succ):", tmp, file=f)
-        print("average turn (all):", turn_num / total_dialog, file=f)
-        print("percentage of domains that satisfy the database constraints: %.3f" % \
-              (1 if num_domains == 0 else (num_domains_satisfying_constraints / num_domains)), file=f)
-        print("percentage of dialogs that satisfy the database constraints: %.3f" % (num_dialogs_satisfying_constraints / total_dialog), file=f)
-        f.close()
 
-        reporter.report(complete_num/total_dialog, suc_num/total_dialog, np.mean(precision), np.mean(recall), np.mean(f1), tmp, turn_num / total_dialog)
+        #  print to console
+        try:
+            print("=" * 100)
+            print("complete number of dialogs/tot:", complete_num / total_dialog)
+            print("success number of dialogs/tot:", suc_num / total_dialog)
+            print("average precision:", np.mean(precision))
+            print("average recall:", np.mean(recall))
+            print("average f1:", np.mean(f1))
+            print('average book rate:', np.mean(match))
+            print("average turn (succ):", tmp)
+            print("average turn (all):", turn_num / total_dialog)
+            print("percentage of domains that satisfy the database constraints: %.3f" %
+                (1 if num_domains == 0 else (num_domains_satisfying_constraints / num_domains)))
+            print("percentage of dialogs that satisfy the database constraints: %.3f" % (
+                num_dialogs_satisfying_constraints / total_dialog))
+            print("=" * 20, " LEXICAL DIVERSITY OF ALL USER UTTERANCES ", "=" * 20)
+            for diversity_metric, diversity_result in diversity.items():
+                print('{}: {}'.format(
+                    diversity_metric, format(diversity_result, '.2f')))
 
-        return complete_num/total_dialog, suc_num/total_dialog, np.mean(precision), np.mean(recall), np.mean(f1), np.mean(match), turn_num / total_dialog
+            # save to res.txt
+            print("complete number of dialogs/tot:", complete_num / total_dialog, file=f)
+            print("success number of dialogs/tot:", suc_num / total_dialog, file=f)
+            print("average precision:", np.mean(precision), file=f)
+            print("average recall:", np.mean(recall), file=f)
+            print("average f1:", np.mean(f1), file=f)
+            print('average book rate:', np.mean(match), file=f)
+            print("average turn (succ):", tmp, file=f)
+            print("average turn (all):", turn_num / total_dialog, file=f)
+            print("percentage of domains that satisfy the database constraints: %.3f" %
+                (1 if num_domains == 0 else (num_domains_satisfying_constraints / num_domains)), file=f)
+            print("percentage of dialogs that satisfy the database constraints: %.3f" % (
+                num_dialogs_satisfying_constraints / total_dialog), file=f)
+            for diversity_metric, diversity_result in diversity.items():
+                print('{}: {}'.format(
+                    diversity_metric, format(diversity_result, '.2f')), file=f)
+            print("=" * 79, tmp, file=f)
+            f.close()
+
+            reporter.report(complete_num/total_dialog, suc_num/total_dialog, np.mean(precision), np.mean(recall), np.mean(f1), tmp, turn_num / total_dialog)
+
+            return complete_num/total_dialog, suc_num/total_dialog, np.mean(precision), np.mean(recall), np.mean(f1), np.mean(match), turn_num / total_dialog
+
+        except Exception as exc:
+            logger.error('Analysis failed: {} Traceback: {}'.format(exc, traceback.format_exc()))  # noqa
 
     def compare_models(self, agent_list, model_name, total_dialog=100):
         if len(agent_list) != len(model_name):
