@@ -128,11 +128,14 @@ pro_correction = {
 def null_boldify(content):
     return content
 
+
 def do_boldify(content):
     return '<b>' + content + '</b>'
 
+
 def nomial_sample(counter: Counter):
     return list(counter.keys())[np.argmax(np.random.multinomial(1, list(counter.values())))]
+
 
 class GoalGenerator:
     """User goal generator."""
@@ -157,9 +160,11 @@ class GoalGenerator:
         self.boldify = do_boldify if boldify else null_boldify
         self.sample_info_from_trainset = sample_info_from_trainset
         self.sample_reqt_from_trainset = sample_reqt_from_trainset
-        self.train_database = self.db.query('train',[])
+        self.train_database = self.db.query('train', [])
         if os.path.exists(self.goal_model_path):
-            self.ind_slot_dist, self.ind_slot_value_dist, self.domain_ordering_dist, self.book_dist, self.slots_num_dist, self.slots_combination_dist = pickle.load(
+            self.ind_slot_dist, self.ind_slot_value_dist,
+            self.domain_ordering_dist, self.book_dist, self.slots_num_dist,
+            self.slots_combination_dist = pickle.load(
                 open(self.goal_model_path, 'rb'))
             print('Loading goal model is done')
         else:
@@ -566,6 +571,10 @@ class GoalGenerator:
         mess_ptr4domain = 0
         state = deepcopy(user_goal)
 
+        domain_ordering = user_goal.domains
+        domain_goals = user_goal.domain_goals
+        user_goal = {'domain_ordering': domain_ordering, **domain_goals}
+
         for dom in user_goal['domain_ordering']:
             dom_msg = []
             state = deepcopy(user_goal[dom])
@@ -668,8 +677,9 @@ class GoalGenerator:
             def get_same_people_domain(user_goal, domain, slot):
                 if slot not in ['day', 'people']:
                     return None
-                domain_index = user_goal['domain_ordering'].index(domain)
-                previous_domains = user_goal['domain_ordering'][:domain_index]
+                user_goal_domains = list(user_goal.keys())
+                domain_index = user_goal_domains.index(domain)
+                previous_domains = user_goal_domains[:domain_index]
                 for prev in previous_domains:
                     if prev in ['restaurant', 'hotel', 'train'] and 'book' in user_goal[prev] and \
                                     slot in user_goal[prev]['book'] and user_goal[prev]['book'][slot] == \
