@@ -22,7 +22,7 @@ class Session(ABC):
     @abstractmethod
     def next_response(self, observation):
         """Generated the next response.
-        
+
         Args:
             observation (str or dict): The agent observation of next agent.
         Returns:
@@ -53,7 +53,9 @@ class BiSession(Session):
             The dialog history, formatted as [[user_uttr1, sys_uttr1], [user_uttr2, sys_uttr2], ...]
     """
 
-    def __init__(self, sys_agent: Agent, user_agent: Agent, kb_query=None, evaluator=None):
+    def __init__(
+            self, sys_agent: Agent, user_agent: Agent,
+            kb_query=None, evaluator=None):
         """
         Args:
             sys_agent (Agent):
@@ -93,11 +95,13 @@ class BiSession(Session):
         return response
 
     def next_turn(self, last_observation):
-        """Conduct a new turn of dialog, which consists of the system response and user response.
+        """Conduct a new turn of dialog, which consists of the system response
+          and user response.
 
-        The variable type of responses can be either 1) str or 2) dialog act, depends on the dialog mode settings of the
+        The variable type of responses can be either 1) str or 2) dialog act,
+          depends on the dialog mode settings of the
         two agents which are supposed to be the same.
-        
+
         Args:
             last_observation:
                 Last agent response.
@@ -140,8 +144,9 @@ class BiSession(Session):
         self.sys_agent.policy.train()
 
     def init_session(self, **kwargs):
-        self.sys_agent.init_session()
         self.user_agent.init_session(**kwargs)
+        self.sys_agent.init_session()
+
         if self.evaluator:
             self.evaluator.add_goal(self.user_agent.policy.get_goal())
         self.dialog_history = []
