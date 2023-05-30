@@ -11,8 +11,10 @@ class LibTest(TestCommand):
 
     def run_tests(self):
         # import here, cause outside the eggs aren't loaded
-        ret = os.system("pytest --cov=ConvLab-2 tests/ --cov-report term-missing")
+        ret = os.system(
+            "pytest --cov=ConvLab-2 tests/ --cov-report term-missing")
         sys.exit(ret >> 8)
+
 
 setup(
     name='ConvLab-2',
@@ -89,6 +91,6 @@ setup(
     url='https://github.com/thu-coai/ConvLab-2',
     author='thu-coai',
     author_email='thu-coai-developer@googlegroups.com',
-    python_requires='>=3.5',
+    python_requires='>=3.5,<3.10',
     zip_safe=False
 )
