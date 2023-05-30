@@ -189,8 +189,7 @@ if __name__ == '__main__':
     sys_agent = PipelineAgent(
         sys_nlu, sys_dst, sys_policy, sys_nlg,
         name='sys',
-        print_details=print_details,
-        output_dir=save_dir)
+        print_details=print_details)
 
     if args.user_simulator == 'ours':
         user_nlg_model_class = MODEL_ID_MODEL_CLASS_MAPPING.get(
