@@ -79,7 +79,20 @@ class MultiWozEvaluator(Evaluator):
         """
         self.sys_da_array = []
         self.usr_da_array = []
-        self.goal = goal
+
+        goal_with_book = {}
+        for domain, intents in goal.items():
+            goal_with_book[domain] = {
+                'info': {}, 'book': goal.get(domain).get('book', {}),
+                'reqt': goal.get(domain).get('reqt', {})
+            }
+            for slot, value in intents.get('info', {}).items():
+                if 'book' in slot:
+                    goal_with_book[domain]['book'][slot.split(" ")[1]] = value
+                else:
+                    goal_with_book[domain]['info'][slot] = value
+
+        self.goal = goal_with_book
         self.cur_domain = ''
         self.booked = self._init_dict_booked()
 
@@ -151,7 +164,7 @@ class MultiWozEvaluator(Evaluator):
                 for k, v in goal[domain]['info'].items():
                     if k in ['destination', 'departure']:
                         tot -= 1
-                    elif k == 'leaveAt':
+                    elif k == 'leaveAt' or k == 'leave at':
                         try:
                             v_constraint = int(v.split(':')[0]) * 100 + int(v.split(':')[1])
                             v_select = int(entity['leaveAt'].split(':')[0]) * 100 + int(entity['leaveAt'].split(':')[1])
@@ -159,7 +172,7 @@ class MultiWozEvaluator(Evaluator):
                                 match += 1
                         except (ValueError, IndexError):
                             match += 1
-                    elif k == 'arriveBy':
+                    elif k == 'arriveBy' or k == 'arrive by':
                         try:
                             v_constraint = int(v.split(':')[0]) * 100 + int(v.split(':')[1])
                             v_select = int(entity['arriveBy'].split(':')[0]) * 100 + int(
@@ -167,6 +180,9 @@ class MultiWozEvaluator(Evaluator):
                             if v_constraint >= v_select:
                                 match += 1
                         except (ValueError, IndexError):
+                            match += 1
+                    elif k == 'price range':
+                        if v.strip() == entity['pricerange'].strip():
                             match += 1
                     else:
                         if v.strip() == entity[k].strip():
@@ -224,11 +240,13 @@ class MultiWozEvaluator(Evaluator):
     def _check_value(self, domain, key, value):
         if key == "area":
             return value.lower() in ["centre", "east", "south", "west", "north"]
-        elif key == "arriveBy" or key == "leaveAt":
+        elif (key == "arriveBy" or key == "leaveAt"
+              or key == 'arrive' or key == 'leave'):
             return time_re.match(value)
         elif key == "day":
-            return value.lower() in ["monday", "tuesday", "wednesday", "thursday", "friday",
-                                     "saturday", "sunday"]
+            return value.lower() in {
+                "monday", "tuesday", "wednesday", "thursday", "friday",
+                "saturday", "sunday"}
         elif key == "duration":
             return 'minute' in value
         elif key == "internet" or key == "parking":
