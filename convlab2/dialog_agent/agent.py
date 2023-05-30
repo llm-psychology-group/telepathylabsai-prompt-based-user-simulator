@@ -58,7 +58,9 @@ class PipelineAgent(Agent):
            =====   =====    ======  ===     ==      ===
     """
 
-    def __init__(self, nlu: NLU, dst: DST, policy: Policy, nlg: NLG, name: str):
+    def __init__(
+        self, nlu: NLU, dst: DST, policy: Policy, nlg: NLG,
+            name: str, print_details=True):
         """The constructor of PipelineAgent class.
 
         Here are some special combination cases:
@@ -90,6 +92,7 @@ class PipelineAgent(Agent):
         self.nlg = nlg
         self.init_session()
         self.history = []
+        self.print_details = print_details
 
     def state_replace(self, agent_state):
         """
@@ -112,13 +115,15 @@ class PipelineAgent(Agent):
 
     def response(self, observation):
         """Generate agent response using the agent modules."""
-        # Note: If you modify the logic of this function, please ensure that it is consistent with deploy.server.ServerCtrl._turn()
+        # Note: If you modify the logic of this function, please ensure that
+        #  it is consistent with deploy.server.ServerCtrl._turn()
         if self.dst is not None:
             self.dst.state['history'].append([self.opponent_name, observation]) # [['sys', sys_utt], ['user', user_utt],...]
         self.history.append([self.opponent_name, observation])
         # get dialog act
         if self.nlu is not None:
-            self.input_action = self.nlu.predict(observation, context=[x[1] for x in self.history[:-1]])
+            self.input_action = self.nlu.predict(
+                observation, context=[x[1] for x in self.history[:-1]])
         else:
             self.input_action = observation
         self.input_action = deepcopy(
@@ -139,6 +144,20 @@ class PipelineAgent(Agent):
         # get model response
         if self.nlg is not None:
             model_response = self.nlg.generate(self.output_action)
+            if self.name == 'sys':
+                if self.print_details:
+                    print("ASSISTANT:", model_response,
+                          'DA:', self.output_action)
+                else:
+                    print("ASSISTANT:", model_response)
+
+            else:
+                if self.print_details:
+                    print("CUSTOMER:", model_response)
+                else:
+                    print(
+                        "CUSTOMER:", model_response, 'DA:', self.output_action)
+
         else:
             model_response = self.output_action
         # print(model_response)
