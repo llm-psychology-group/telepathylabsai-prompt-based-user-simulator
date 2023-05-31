@@ -116,7 +116,7 @@ class Analyzer:
             torch.manual_seed(goal_seeds[0])
             goal_seeds.pop(0)
             conversation_id = uuid4().hex
-            sess.init_session(conversation_id=conversation_id)
+            sess.init_session()
 
             usr_da_list = []
             failed_da_sys = []
