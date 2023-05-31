@@ -27,7 +27,6 @@ For a comprehensive understanding of the implementation and evaluation process, 
 3. Install the library via pip:
   ```bash
   pip install -e .
-  pip install -r requirements.txt
   ```
 4. Unzip the file `train_corrected.json.zip`. This file will be used to retrieve the shots for building the prompt.
   ```bash
@@ -44,7 +43,7 @@ WIP (list of available models)
 To run the experiments, just run 
 
 ```bash
-python python scripts/user_simulator_script.py
+python scripts/user_simulator_script.py
 ```
 
 Run `python scripts/user_simulator_script.py --help` to see list of parameters. 
