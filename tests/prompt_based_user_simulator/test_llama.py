@@ -14,9 +14,10 @@ TOKENIZER = LlamaTokenizer.from_pretrained("decapoda-research/llama-7b-hf")
 MODEL = LlamaForCausalLM.from_pretrained("decapoda-research/llama-7b-hf")
 TOKENIZER.add_special_tokens({'pad_token': '[PAD]'})
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+MODEL.to(DEVICE)
 
 
-def test_text_generation_with_llama():
+def test_text_generation():
 
     prompt = open('tests/sample_prompt.txt', 'r').read()
 

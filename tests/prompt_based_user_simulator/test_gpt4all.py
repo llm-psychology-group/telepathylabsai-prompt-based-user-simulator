@@ -1,22 +1,15 @@
 import torch
-from transformers import LlamaForCausalLM, LlamaTokenizer
 
-# Note: tried
-# from transformers import AutoTokenizer, AutoModelForCausalLM
-# TOKENIZER = AutoTokenizer.from_pretrained("decapoda-research/llama-13b-hf")
-# get an error:
-# The tokenizer class you load from this checkpoint is not the same type as the class this function is called from. It may result in unexpected tokenization.  # noqa
-# The tokenizer class you load from this checkpoint is 'LLaMATokenizer'.
-# The class this function is called from is 'LlamaTokenizer'.
+from transformers import AutoTokenizer, AutoModelForCausalLM
 
-# https://huggingface.co/docs/transformers/main/en/model_doc/llama#transformers.LlamaModel  # noqa
-TOKENIZER = LlamaTokenizer.from_pretrained("decapoda-research/llama-13b-hf")
-MODEL = LlamaForCausalLM.from_pretrained("decapoda-research/llama-7b-hf")
+TOKENIZER = AutoTokenizer.from_pretrained("nomic-ai/gpt4all-j")
+MODEL = AutoModelForCausalLM.from_pretrained("nomic-ai/gpt4all-j")
 TOKENIZER.add_special_tokens({'pad_token': '[PAD]'})
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+MODEL.to(DEVICE)
 
 
-def test_text_generation_with_llama():
+def test_text_generation():
 
     padded_sequence = TOKENIZER(
         'hello I want to book an appointment for my car',

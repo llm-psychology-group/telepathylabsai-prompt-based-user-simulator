@@ -5,9 +5,10 @@ TOKENIZER = AutoTokenizer.from_pretrained("databricks/dolly-v2-3b")
 MODEL = AutoModelForCausalLM.from_pretrained("databricks/dolly-v2-3b")
 TOKENIZER.add_special_tokens({'pad_token': '[PAD]'})
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+MODEL.to(DEVICE)
 
 
-def test_text_generation_with_llama():
+def test_text_generation():
 
     prompt = open('tests/sample_prompt.txt', 'r').read()
 
