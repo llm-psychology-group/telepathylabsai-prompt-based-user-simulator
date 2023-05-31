@@ -38,8 +38,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     try:
-        prefix = "diversity"+"_"+args.data_key
-        output_file = prefix+"_"+"_".join(args.dataset_path.split("/"))
+        prefix = "diversity" + "_" + args.data_key
+        output_file = prefix + "_" + "_".join(args.dataset_path.split("/"))
         # set_seed(20200202)  # 20200202
         diversity = get_diversity_from_dataset(
             dataset_path=args.dataset_path,
