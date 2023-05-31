@@ -16,7 +16,7 @@ import logging
 
 
 class Analyzer:
-    def __init__(self, user_agent, save_dir, dataset='multiwoz'):
+    def __init__(self, user_agent, save_dir="results", dataset='multiwoz'):
         self.user_agent = user_agent
         self.dataset = dataset
         self.save_dir = save_dir
