@@ -162,9 +162,9 @@ class GoalGenerator:
         self.sample_reqt_from_trainset = sample_reqt_from_trainset
         self.train_database = self.db.query('train', [])
         if os.path.exists(self.goal_model_path):
-            self.ind_slot_dist, self.ind_slot_value_dist,
-            self.domain_ordering_dist, self.book_dist, self.slots_num_dist,
-            self.slots_combination_dist = pickle.load(
+            (self.ind_slot_dist, self.ind_slot_value_dist,
+             self.domain_ordering_dist, self.book_dist, self.slots_num_dist,
+             self.slots_combination_dist) = pickle.load(
                 open(self.goal_model_path, 'rb'))
             print('Loading goal model is done')
         else:
