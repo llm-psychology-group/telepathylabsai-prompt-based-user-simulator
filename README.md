@@ -51,10 +51,14 @@ If you want to run it with a smaller GPU, you may want to use a smaller model `-
 
 
 ### Diversity of user and system utterances
+
+When running the experiments, the diversity metrics are computed at the same time.
+However, to compute the metrics on the reference dataset (usually, the training dataset), you can run the following script: 
+
 ```bash
 python scripts/calculate_diversity.py --dataset_path data/multiwoz/train.json --data-key usr
 ```
-will calculate various diversity metrics and save them to: `results/diversity/diversity_usr_data_multiwoz_train.json`
+The results will be stored here: `results/diversity/diversity_usr_data_multiwoz_train.json`
 
 ## Issues and contributions
 
