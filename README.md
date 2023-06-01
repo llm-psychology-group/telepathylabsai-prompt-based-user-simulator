@@ -43,6 +43,9 @@ python scripts/user_simulator_script.py
 ```
 
 Run `python scripts/user_simulator_script.py --help` to see list of parameters. 
+The script will run a specific number of dialogs with the defined dialog system and user simulator models.
+The results are stored in the specified folder. The summary of the metrics is found in the `res.txt` file.
+
 If you want to run it with a smaller GPU, you may want to use a smaller model `--model-id google/flan-t5-small`.
 
 
