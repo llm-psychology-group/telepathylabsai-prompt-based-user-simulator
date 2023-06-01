@@ -240,41 +240,43 @@ class Analyzer:
                         failed_da_sys, failed_da_usr, cycle_start, domain_turn)
 
             try:
-                # add last_generate
-                generated[conversation_id] = sess.user_agent.nlg.last_generate
+                if hasattr(sess.user_agent.nlg, 'last_generate'):
+                    # add last_generate
+                    generated[
+                        conversation_id] = sess.user_agent.nlg.last_generate
 
-                # write json file
-                with open(fgen_filepath_json, 'w') as fp:
-                    json.dump(generated, fp, indent=2)
+                    # write json file
+                    with open(fgen_filepath_json, 'w') as fp:
+                        json.dump(generated, fp, indent=2)
 
-                # append
-                print(
-                    '\n*** conversation_id={} ***\n'
-                    '\n=== PROMPTED ===\n'
-                    '{}'
-                    '\n=== GENERATED ===\n'
-                    '{}'
-                    '\n=== PROCESSED ===\n'
-                    '{}'
-                    '\n=== RESULTS ==='
-                    '\ntask_success: {}'
-                    '\ntask_complete: {}'
-                    '\nbook_rate: {}'
-                    '\nstats: {}'
-                    '\npercentage: {}'
-                    '\n\n'
-                    ''.format(
-                        conversation_id,
-                        generated[conversation_id]['prompted_text'],
-                        generated[conversation_id]['generated_text'],
-                        generated[conversation_id]['processed_text'],
-                        task_success,
-                        task_complete,
-                        book_rate,
-                        stats,
-                        percentage
-                    ),
-                    file=fgen_txt)
+                    # append
+                    print(
+                        '\n*** conversation_id={} ***\n'
+                        '\n=== PROMPTED ===\n'
+                        '{}'
+                        '\n=== GENERATED ===\n'
+                        '{}'
+                        '\n=== PROCESSED ===\n'
+                        '{}'
+                        '\n=== RESULTS ==='
+                        '\ntask_success: {}'
+                        '\ntask_complete: {}'
+                        '\nbook_rate: {}'
+                        '\nstats: {}'
+                        '\npercentage: {}'
+                        '\n\n'
+                        ''.format(
+                            conversation_id,
+                            generated[conversation_id]['prompted_text'],
+                            generated[conversation_id]['generated_text'],
+                            generated[conversation_id]['processed_text'],
+                            task_success,
+                            task_complete,
+                            book_rate,
+                            stats,
+                            percentage
+                        ),
+                        file=fgen_txt)
             except Exception as exc:
                 logger.warning(
                     'Cannot write last_generate: {} Traceback: {}'.format(
