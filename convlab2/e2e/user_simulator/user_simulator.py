@@ -40,7 +40,7 @@ class UserSimulatorE2E(Agent):
 
         self.nlg = nlg if nlg else FLANT5Model()
 
-        self.policy = DummyPolicy(
+        self.policy = SimulatorPolicy(
             shots_file=shots_file,
             print_details=print_details)
         self.history = []
@@ -289,9 +289,9 @@ class UserSimulatorE2E(Agent):
             print("--------------------\n")
 
 
-class DummyPolicy(Policy):
+class SimulatorPolicy(Policy):
     def __init__(self, shots_file, print_details=True):
-        super(DummyPolicy, self).__init__()
+        super(SimulatorPolicy, self).__init__()
         self.max_turn = 40
         self.max_initiative = 4
         self.goal_generator = GoalGenerator()
