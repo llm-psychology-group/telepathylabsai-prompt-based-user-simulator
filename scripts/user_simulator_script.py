@@ -88,7 +88,7 @@ if __name__ == '__main__':
         help='default: {}'.format(default_save_dir),
         default=default_save_dir, type=str
     )
-    default_jaccard_sampling = 'FALSE'
+    default_jaccard_sampling = 'TRUE'
     parser.add_argument(
         '--jaccard-sampling', required=False,
         choices={'TRUE', 'FALSE'},
