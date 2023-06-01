@@ -14,7 +14,6 @@ from convlab2.task.multiwoz.goal_generator import GoalGenerator
 
 class UserSimulatorE2E(Agent):
     def __init__(self,
-                 # prompt_description_file_path,
                  name='user', shots_file='data/multiwoz/train_modified.json',
                  sample_based_on_user_goal=True, num_shots=2,
                  nlg=None, print_details=True,
@@ -99,19 +98,22 @@ class UserSimulatorE2E(Agent):
         prompt = '\nExample {}:\nREQUIREMENTS:'.format(shot_number + 1)
 
         # user goal
-        message = [_preprocessing_text(m) for m in message]
-        message = ' '.join(message).split('.')[:-1]
-        if use_bullet_pointed_goal:
-            prompt += '\n'
-            for i, sentence in enumerate(message):
-                if i == 0:
-                    sentence = ' ' + sentence
-                sentence = '-' + sentence + '.'
-                if i != len(message) - 1:
-                    sentence += '\n'
-                prompt += sentence
+        if type(message) == list:
+            message = [_preprocessing_text(m) for m in message]
+            message = ' '.join(message).split('.')[:-1]
+            if use_bullet_pointed_goal:
+                prompt += '\n'
+                for i, sentence in enumerate(message):
+                    if i == 0:
+                        sentence = ' ' + sentence
+                    sentence = '-' + sentence + '.'
+                    if i != len(message) - 1:
+                        sentence += '\n'
+                    prompt += sentence
+            else:
+                prompt += ' ' + '.'.join(message)
         else:
-            prompt += ' ' + '.'.join(message)
+            prompt += _preprocessing_text(message)
 
         prompt += '\nCONVERSATION:'
 
