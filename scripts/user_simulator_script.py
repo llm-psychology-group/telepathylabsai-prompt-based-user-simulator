@@ -36,7 +36,6 @@ from convlab2.nlg.generative_models import MODEL_ID_MODEL_CLASS_MAPPING
 import random
 import numpy as np
 import torch
-import pandas as pd
 import os
 
 
