@@ -7,7 +7,7 @@ For a comprehensive understanding of the implementation and evaluation process, 
 
 - [Installation](#installation)
 - [Models](#models)
-- [Run Experiments](#run-experiments)
+- [Run Experiments](#run-an-experiment)
 - [Issues and Contributions](#issues-and-contributions)
 - [How to cite this work](#how-to-cite-this-work)
 - [License](#license)
