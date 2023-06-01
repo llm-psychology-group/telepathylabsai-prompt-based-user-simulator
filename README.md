@@ -19,7 +19,7 @@ For a comprehensive understanding of the implementation and evaluation process, 
 
 1. Clone the repo:
   ```bash
-  git clone https://ghe.exm-platform.com/silvia-terragni/prompt-based-user-simulator.git
+  git clone https://github.com/silviatti/prompt-based-user-simulator.git
 
   cd prompt-based-user-simulator
   ```
