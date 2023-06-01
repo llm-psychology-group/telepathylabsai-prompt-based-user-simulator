@@ -40,7 +40,7 @@ class UserSimulatorE2E(Agent):
 
         self.nlg = nlg if nlg else FLANT5Model()
 
-        self.policy = UserSimulatorE2E(
+        self.policy = DummyPolicy(
             shots_file=shots_file,
             print_details=print_details)
         self.history = []
