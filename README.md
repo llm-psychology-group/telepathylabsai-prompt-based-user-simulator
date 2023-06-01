@@ -34,11 +34,7 @@ For a comprehensive understanding of the implementation and evaluation process, 
   unzip train_corrected.json.zip
   ```
 
-## Models
-
-WIP (list of available models)
-
-## Run Experiments
+## Run an experiment
 
 To run the experiments, just run 
 
@@ -51,14 +47,27 @@ If you want to run it with a smaller GPU, you may want to use a smaller model `-
 
 
 ### Diversity of user and system utterances
-
-When running the experiments, the diversity metrics are computed at the same time.
-However, to compute the metrics on the reference dataset (usually, the training dataset), you can run the following script: 
-
 ```bash
 python scripts/calculate_diversity.py --dataset_path data/multiwoz/train.json --data-key usr
 ```
-The results will be stored here: `results/diversity/diversity_usr_data_multiwoz_train.json`
+will calculate various diversity metrics and save them to: `results/diversity/diversity_usr_data_multiwoz_train.json`
+
+
+## Generative User Simulator Models
+The framework supports different generative models for generating the user utterances. You can find them in `convlab2/nlg/generative_models`.
+A generative model usually is a subclass of `convlab2/nlg/generative_models/user_simulator_generative_model.py`. 
+
+
+### OpenAI Models
+We currently support OpenAI's models through Azure API. You just need to specify your keys before running the models like this:
+```bash
+export OPENAI_API_BASE=https://azure-openai-something.openai.azure.com/
+export OPENAI_API_KEY=your_key
+```
+
+### HuggingFace Models
+We currently support HuggingFace models, which can be loaded via AutoModel interface. We also have model-specific definitions for FLAN-T5 and LLaMa models.
+
 
 ## Issues and contributions
 
