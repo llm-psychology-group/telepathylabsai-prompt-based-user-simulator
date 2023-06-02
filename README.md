@@ -3,7 +3,7 @@
 This repo enhances **ConvLab-2** by incorporating the implementation of prompt-based user simulators using LLMs (among those, OpenAI's ChatGPT, HuggingFace-compatible LLMs like FLAN-T5). The user simulator selects relevant conversations as shots and generates interactive turn-by-turn conversations by interacting with a Convlab-2 dialog system on the MultiWOZ dataset.
 
 
-For a comprehensive understanding of the implementation and evaluation process, please refer to the [paper]](https://arxiv.org/abs/2306.00774)
+For a comprehensive understanding of the implementation and evaluation process, please refer to the [paper](https://arxiv.org/abs/2306.00774).
 
 - [Installation](#installation)
 - [Models](#models)
