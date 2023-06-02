@@ -3,7 +3,7 @@
 This repo enhances **ConvLab-2** by incorporating the implementation of prompt-based user simulators using LLMs (among those, OpenAI's ChatGPT, HuggingFace-compatible LLMs like FLAN-T5). The user simulator selects relevant conversations as shots and generates interactive turn-by-turn conversations by interacting with a Convlab-2 dialog system on the MultiWOZ dataset.
 
 
-For a comprehensive understanding of the implementation and evaluation process, please refer to the [paper]](https://arxiv.org/abs/TO FIX)
+For a comprehensive understanding of the implementation and evaluation process, please refer to the [paper]](https://arxiv.org/abs/2306.00774)
 
 - [Installation](#installation)
 - [Models](#models)
@@ -95,6 +95,14 @@ A shout-out to the authors of [ConvLab-2](https://github.com/thu-coai/ConvLab-2)
 Please cite:
 
 ```
+@article{Terragni2023usersimulator,
+  title={In-Context Learning User Simulators for Task-Oriented Dialog Systems},
+  author={Silvia Terragni and Modestas Filipavicius and Nghia Khau and Bruna Guedes and André Manso and Roland Mathis},
+  journal={ArXiv},
+  year={2023},
+  url="https://arxiv.org/abs/2306.00774",
+  volume={abs/2306.00774}
+}
 
 @inproceedings{zhu2020convlab2,
     title={ConvLab-2: An Open-Source Toolkit for Building, Evaluating, and Diagnosing Dialogue Systems},
